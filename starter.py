@@ -33,7 +33,7 @@ def preproc(trainData, validData=None, testData=None):
 	symm_train = np.zeros((len(trainData), 2))
 	for i in range(0, len(trainData)):
 		flipped_train = np.flipud(trainData[i])
-		square_diff_train = np.square(trainData[i] - flipped_train).sum()
+		square_diff_train = np.absolute(trainData[i] - flipped_train).sum()
 		symm_train[i]=np.array([1, square_diff_train])
 	
 	returned_vals = (symm_train)
@@ -44,12 +44,12 @@ def preproc(trainData, validData=None, testData=None):
 
 		for i in range(0, len(validData)):
 			flipped_valid = np.flipud(validData[i])
-			square_diff_valid = np.square(validData[i] - flipped_valid).sum()
+			square_diff_valid = np.absolute(validData[i] - flipped_valid).sum()
 			symm_valid[i] = np.array([1, square_diff_valid])
 
 		for j in range(0, len(testData)):
 			flipped_test = np.flipud(testData[i])
-			square_diff_test = np.square(testData[i] - flipped_test).sum()
+			square_diff_test = np.absolute(testData[i] - flipped_test).sum()
 			symm_test[i] = np.array([1, square_diff_test])
 		
 		returned_vals = (symm_train, symm_valid, symm_test)
