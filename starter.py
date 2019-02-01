@@ -1,12 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy import linalg as LA
+from numpy.linalg import inv
+
+img_h = img_w = 28             # MNIST images are 28x28
+img_size_flat = img_h * img_w  # 28x28=784, the total number of pixels
 
 
 def loadData():
     with np.load('notMNIST.npz') as data :
         Data, Target = data ['images'], data['labels']
-        print(Data[0].shape)
-        print(Target[len(Target) - 1])
         posClass = 2
         negClass = 9
         dataIndx = (Target==posClass) + (Target==negClass)
@@ -23,37 +26,152 @@ def loadData():
         testData, testTarget = Data[3600:], Target[3600:]
     return trainData, validData, testData, trainTarget, validTarget, testTarget
 
-"""
-def MSE(W, b, x, y, reg):  # Your implementation here
-    size=y.size# Your implementation here
-    y_pred=x.dot(W.transpose()).flatten()
-    error=np.power((y_pred+b-y.flatten()),2)
-    estimate=(1/size)*error.sum()
-    decay=LA.norm(W)*LA.norm(W)*0.5*reg
+
+def preproc_new(trainData, validData=None, testData=None):
+    shape_train = np.shape(trainData)
+    shape_valid = np.shape(validData)
+    shape_test = np.shape(testData)
+
+    num_samples_train = shape_train[0]
+    num_samples_valid = shape_valid[0]
+    num_samples_test = shape_test[0]
+
+    pic_flattened = shape_train[1]*shape_train[2]
+    trainData = np.reshape(trainData, (num_samples_train, pic_flattened))
+    validData = np.reshape(validData, (num_samples_valid, pic_flattened))
+    testData = np.reshape(testData, (num_samples_test, pic_flattened))
+
+    return trainData, validData, testData
+
+
+def preproc(trainData, validData=None, testData=None):
+
+    symm_train = np.zeros((len(trainData), 2))
+    for i in range(0, len(trainData)):
+        flipped_train = np.flipud(trainData[i])
+        square_diff_train = np.square(trainData[i] - flipped_train).sum()
+        symm_train[i]=np.array([1, square_diff_train])
+
+    returned_vals = (symm_train,)
+
+    if validData is not None and testData is not None:
+        symm_valid = np.zeros((len(validData), 2))
+        symm_test = np.zeros((len(testData), 2))
+
+        for i in range(0, len(validData)):
+            flipped_valid = np.flipud(validData[i])
+            square_diff_valid = np.square(validData[i] - flipped_valid).sum()
+            symm_valid[i] = np.array([1, square_diff_valid])
+
+        for j in range(0, len(testData)):
+            flipped_test = np.flipud(testData[j])
+            square_diff_test = np.square(testData[j] - flipped_test).sum()
+            symm_test[j] = np.array([1, square_diff_test])
+
+        returned_vals = (symm_train, symm_valid, symm_test)
+
+    return returned_vals
+
+
+def MSE(W, b, x, y, reg):
+    """
+    :param W: Weight Matrix for which error will be calculated
+    :param b: Bias scalar added to the weight matrix
+    :param x: Dataset, matrix multiplied by W to produce predicted results, y_pred
+    :param y: Ground truth classification values
+    :param reg: Regularization value to be applied to the weight matrix W
+    :return: Error value returned using Mean Square Error method to calculate
+
+    Calculates the Mean Square Error of the weight matrix W in predicting the class of dataset x, based on ground
+    truths y. Determines as follows:
+
+    MSE = (1/2N)*sum(norm((W_transpose * x(n) + b - y(n)))^2 + 0.5*reg(norm(W))^2
+    """
+    size = y.size  # Your implementation here
+    y_pred = x.dot(W.transpose()).flatten()
+    error = np.power((y_pred + b - y.flatten()), 2)
+    # print(error.sum())
+    # print(size)
+    estimate = error.sum() / (2*size)
+    # print(estimate)
+    decay = 0.5 * LA.norm(W) * LA.norm(W) * reg
+    return estimate + decay
+   
+
+def gradMSE(W, b, x, y, reg):
+    # Your implementation here
+    size = y.size   
+    y_pred = x.dot(W.transpose()).flatten()
+    error = (y_pred + b - y.flatten()) + reg*W[:-1].sum()
+    return error.dot(x) / size
+
+
+def grad_loop(W, b, trainingData, trainingLabels, reg, alpha):
+    error = gradMSE(W, b, trainingData, trainingLabels, reg)
+    
+    norm = np.linalg.norm(error)
+    error /= norm
+
+    # print W
+    W += -(error*alpha)
+    return norm, W
+
+    # Your implementation here
+    # E=MSE(W,b,trainingData,trainingLabels,reg) if close to zero don';t run gradient descent
+
+
+def grad_descent(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS):
+    mse_list = []
+    iterations_list = []
+    while iterations < 100000:
+        g_val, W = grad_loop(W, b, trainingData, trainingLabels, reg, alpha)
+        mse_training = MSE(W, b, trainingData, trainingLabels, reg)
+        iterations += 1
+
+        iterations_list.append(iterations)
+        mse_list.append(mse_training)
+
+        # print("W: ", W)
+        if g_val < 0.001:
+            print("done")
+            break
+    # print("W: ", W)
+    fig, ax = plt.subplots()
+    ax.plot(iterations_list, mse_list)
+    plt.show()
     return
-"""
-
-def gradMSE(W, b, x, y, reg):  # Your implementation here
-
-    return
 
 
-def crossEntropyLoss(W, b, x, y, reg):  # Your implementation here
+'''def crossEntropyLoss(W, b, x, y, reg):
+    # Your implementation here
 
-    return
+def gradCE(W, b, x, y, reg):
+    # Your implementation here
 
+def grad_descent(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS):
+    # Your implementation here
 
-def gradCE(W, b, x, y, reg): # Your implementation here
-
-    return
-
-
-def grad_descent(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS): # Your implementation here
-
-    return
-
-
-def buildGraph(beta1=None, beta2=None, epsilon=None, lossType=None, learning_rate=None): # Your implementation here
-    return
+def buildGraph(beta1=None, beta2=None, epsilon=None, lossType=None, learning_rate=None):
+    # Your implementation here
+'''
 
 trainData, validData, testData, trainTarget, validTarget, testTarget = loadData()
+trainData, validData, testData = preproc_new(trainData, validData, testData)
+print(np.shape(trainData))
+# all_data = preproc(trainData, validData, testData)
+# trainData = all_data[0]
+# validData = all_data[1]
+# testData = all_data[2]
+
+W = np.random.rand(1, 784)
+atStart = MSE(W, 0, trainData, trainTarget, reg=0.0)
+
+grad_descent(W, 0, trainData, trainTarget, alpha=0.0003, iterations=0.0, reg=0.0, EPS=1e-7)
+
+atEnd = MSE(W, 0, trainData, trainTarget, reg=0.0)
+print(atStart, atEnd)
+
+print('validation error: ', MSE(W, 0, validData, validTarget, reg=0.0))
+print('test error: ', MSE(W, 0, testData, testTarget, reg=0.0))
+# print("W", np.matmul(np.matmul(inv(np.matmul(trainData.transpose(), trainData)), trainData.transpose()), trainTarget))
+
