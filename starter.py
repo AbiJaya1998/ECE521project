@@ -102,19 +102,23 @@ def gradMSE(W, b, x, y, reg):
     # Your implementation here
     size = y.size   
     y_pred = x.dot(W.transpose()).flatten()
-    error = (y_pred + b - y.flatten()) + reg*W[:-1].sum()
-    return error.dot(x) / size
+    weight_error = (y_pred + b - y.flatten()) + reg*W[:-1].sum()
+    bias_error = (y_pred + b -y.flatten())
+
+     
+    return weight_error.dot(x) / size,bias_error.sum()/size
 
 
 def grad_loop(W, b, trainingData, trainingLabels, reg, alpha):
-    error = gradMSE(W, b, trainingData, trainingLabels, reg)
+    errorW,errorB = gradMSE(W, b, trainingData, trainingLabels, reg)
     
-    norm = np.linalg.norm(error)
-    error /= norm
+    norm = np.linalg.norm(errorW)
+    #errorG /= norm
 
     # print W
-    W += -(error*alpha)
-    return norm, W
+    W += -(errorW*alpha)
+    b += -(errorB*alpha)
+    return norm,W,b
 
     # Your implementation here
     # E=MSE(W,b,trainingData,trainingLabels,reg) if close to zero don';t run gradient descent
@@ -123,11 +127,16 @@ def grad_loop(W, b, trainingData, trainingLabels, reg, alpha):
 def grad_descent(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS):
     mse_list = []
     iterations_list = []
-    while iterations < 100000:
-        g_val, W = grad_loop(W, b, trainingData, trainingLabels, reg, alpha)
+    V_list=[]
+    T_list=[]
+    while iterations < 500:
+        g_val, W, b= grad_loop(W, b, trainingData, trainingLabels, reg, alpha)
         mse_training = MSE(W, b, trainingData, trainingLabels, reg)
         iterations += 1
-
+        Error_V=MSE(W, b, validData, validTarget, reg=0.0)
+        Error_T=MSE(W, b, testData, testTarget, reg=0.0)
+        V_list.append(Error_V)
+        T_list.append(Error_T)
         iterations_list.append(iterations)
         mse_list.append(mse_training)
 
@@ -137,9 +146,11 @@ def grad_descent(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS
             break
     # print("W: ", W)
     fig, ax = plt.subplots()
-    ax.plot(iterations_list, mse_list)
+    ax.plot(iterations_list,mse_list)
+    ax.plot(iterations_list,V_list)
+    ax.plot(iterations_list,T_list)
     plt.show()
-    return
+    return W,b
 
 
 '''def crossEntropyLoss(W, b, x, y, reg):
@@ -166,12 +177,12 @@ print(np.shape(trainData))
 W = np.random.rand(1, 784)
 atStart = MSE(W, 0, trainData, trainTarget, reg=0.0)
 
-grad_descent(W, 0, trainData, trainTarget, alpha=0.0003, iterations=0.0, reg=0.0, EPS=1e-7)
+W,b=grad_descent(W, 0, trainData, trainTarget, alpha=0.0003, iterations=0.0, reg=0.0, EPS=1e-7)
 
-atEnd = MSE(W, 0, trainData, trainTarget, reg=0.0)
+atEnd = MSE(W, b, trainData, trainTarget, reg=0.0)
 print(atStart, atEnd)
 
-print('validation error: ', MSE(W, 0, validData, validTarget, reg=0.0))
-print('test error: ', MSE(W, 0, testData, testTarget, reg=0.0))
+print('validation error: ', MSE(W, b, validData, validTarget, reg=0.0))
+print('test error: ', MSE(W, b, testData, testTarget, reg=0.0))
 # print("W", np.matmul(np.matmul(inv(np.matmul(trainData.transpose(), trainData)), trainData.transpose()), trainTarget))
 
