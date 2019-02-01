@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 from numpy import linalg as LA
 from numpy.linalg import inv
+import time
 
 img_h = img_w = 28             # MNIST images are 28x28
 img_size_flat = img_h * img_w  # 28x28=784, the total number of pixels
@@ -40,7 +42,6 @@ def preproc_new(trainData, validData=None, testData=None):
     trainData = np.reshape(trainData, (num_samples_train, pic_flattened))
     validData = np.reshape(validData, (num_samples_valid, pic_flattened))
     testData = np.reshape(testData, (num_samples_test, pic_flattened))
-
     return trainData, validData, testData
 
 
@@ -146,38 +147,76 @@ def grad_descent(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS
             break
     # print("W: ", W)
     fig, ax = plt.subplots()
-    ax.plot(iterations_list,mse_list)
-    ax.plot(iterations_list,V_list)
-    ax.plot(iterations_list,T_list)
+    ax.plot(iterations_list, mse_list)
+    ax.plot(iterations_list, V_list)
+    ax.plot(iterations_list, T_list)
+    ax.legend((mse_list, V_list, T_list), ('Training Error', 'Validation Error', 'Testing Error'))
     plt.show()
-    return W,b
+    return W, b
 
 
-'''def crossEntropyLoss(W, b, x, y, reg):
+def sigmoid(W, b, x):
+    # print('sigmoid: ')
+    # print(np.shape(W))
+    # print(np.shape(x))
+    # print(np.shape(b))
+    z = x.dot(W.transpose()).flatten()+b
+    return 1/(1+np.exp(z))
+
+
+def crossEntropyLoss(W, b, x, y, reg):
     # Your implementation here
+    size = y.size
+    """
+    print('size of y: ', np.shape(y.flatten()))
+    print('crossEntropy: ')
+    print(np.shape(W))
+    print(np.shape(x))
+    print(np.shape(b))
+    print('hello: ')
+    z2 = np.log(sigmoid(W, b, x))
+    print(np.shape(z2))
+    print('end: ', z2)
+    # z1 = -(y.dot(np.log(sigmoid(W, b, x))))
+    # print(z1)
+    """
+    y_flat = y.flatten()
+    z = -(y_flat.dot(np.log(sigmoid(W, b, x)))) - np.dot((1 - y_flat), np.log(1 - sigmoid(W, b, x)))
+    z = z.sum()/size + 0.5*reg*LA.norm(W)*LA.norm(W)
+    print(z, np.shape(z))
+    return z
+
 
 def gradCE(W, b, x, y, reg):
     # Your implementation here
+    return
+
 
 def grad_descent(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS):
     # Your implementation here
+    return
+
 
 def buildGraph(beta1=None, beta2=None, epsilon=None, lossType=None, learning_rate=None):
     # Your implementation here
-'''
+    return
+
 
 trainData, validData, testData, trainTarget, validTarget, testTarget = loadData()
 trainData, validData, testData = preproc_new(trainData, validData, testData)
-print(np.shape(trainData))
+print('shape', np.shape(trainData))
 # all_data = preproc(trainData, validData, testData)
 # trainData = all_data[0]
 # validData = all_data[1]
 # testData = all_data[2]
+np.random.seed(3)
+W = np.random.rand(784)
+crossEntropyLoss(W, 0, trainData, trainTarget, reg=1)
 
-W = np.random.rand(1, 784)
+'''
 atStart = MSE(W, 0, trainData, trainTarget, reg=0.0)
 
-W,b=grad_descent(W, 0, trainData, trainTarget, alpha=0.0003, iterations=0.0, reg=0.0, EPS=1e-7)
+# W, b = grad_descent(W, 0, trainData, trainTarget, alpha=0.0003, iterations=0.0, reg=0.0, EPS=1e-7)
 
 atEnd = MSE(W, b, trainData, trainTarget, reg=0.0)
 print(atStart, atEnd)
@@ -185,4 +224,5 @@ print(atStart, atEnd)
 print('validation error: ', MSE(W, b, validData, validTarget, reg=0.0))
 print('test error: ', MSE(W, b, testData, testTarget, reg=0.0))
 # print("W", np.matmul(np.matmul(inv(np.matmul(trainData.transpose(), trainData)), trainData.transpose()), trainTarget))
+'''
 

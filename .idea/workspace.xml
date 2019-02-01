@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="338e28e7-02d9-4a9f-a63b-30cab01ce9e7" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/ECE521project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ECE521project.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="338e28e7-02d9-4a9f-a63b-30cab01ce9e7" name="Default Changelist" comment="Merge branch 'master' of https://github.com/Abijaya1998/ECE521project&#10;&#10;# Conflicts:&#10;#&#9;starter.py">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/starter.py" beforeDir="false" afterPath="$PROJECT_DIR$/starter.py" afterDir="false" />
     </list>
@@ -19,20 +17,21 @@
         <counts>
           <entry key="project.closed" value="4" />
           <entry key="project.open.time.1" value="1" />
-          <entry key="project.open.time.6" value="1" />
+          <entry key="project.open.time.5" value="1" />
+          <entry key="project.open.time.6" value="2" />
           <entry key="project.open.time.7" value="1" />
           <entry key="project.open.time.8" value="1" />
-          <entry key="project.opened" value="4" />
+          <entry key="project.opened" value="6" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="3546" />
+          <entry key="py" value="4548" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="3546" />
+          <entry key="Python" value="4548" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -52,14 +51,15 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/starter.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="99" lean-forward="true" selection-start-line="99" selection-end-line="99" />
+            <state relative-caret-position="119">
+              <caret line="184" column="31" selection-start-line="184" selection-start-column="31" selection-end-line="184" selection-end-column="31" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
-                <marker date="1548965881545" expanded="true" signature="1379:1644" ph="..." />
-                <marker date="1548965881545" expanded="true" signature="1698:1700" ph="..." />
-                <marker date="1548965881545" expanded="true" signature="3737:3738" ph="..." />
-                <marker date="1548965881545" expanded="true" signature="4413:4414" ph="..." />
+                <marker date="1549058947584" expanded="true" signature="5564:5635" ph="..." />
+                <marker date="1549058947584" expanded="true" signature="5673:5678" ph="..." />
+                <marker date="1549058947584" expanded="true" signature="6283:6288" ph="..." />
+                <marker date="1549058947584" expanded="true" signature="6410:6415" ph="..." />
+                <marker date="1549058947584" expanded="true" signature="6543:6548" ph="..." />
               </folding>
             </state>
           </provider>
@@ -93,6 +93,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -104,7 +105,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -168,7 +168,7 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.16903915" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.386121" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -189,14 +189,15 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/starter.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="99" lean-forward="true" selection-start-line="99" selection-end-line="99" />
+        <state relative-caret-position="119">
+          <caret line="184" column="31" selection-start-line="184" selection-start-column="31" selection-end-line="184" selection-end-column="31" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <marker date="1548965881545" expanded="true" signature="1379:1644" ph="..." />
-            <marker date="1548965881545" expanded="true" signature="1698:1700" ph="..." />
-            <marker date="1548965881545" expanded="true" signature="3737:3738" ph="..." />
-            <marker date="1548965881545" expanded="true" signature="4413:4414" ph="..." />
+            <marker date="1549058947584" expanded="true" signature="5564:5635" ph="..." />
+            <marker date="1549058947584" expanded="true" signature="5673:5678" ph="..." />
+            <marker date="1549058947584" expanded="true" signature="6283:6288" ph="..." />
+            <marker date="1549058947584" expanded="true" signature="6410:6415" ph="..." />
+            <marker date="1549058947584" expanded="true" signature="6543:6548" ph="..." />
           </folding>
         </state>
       </provider>
