@@ -103,11 +103,9 @@ def gradMSE(W, b, x, y, reg):
     # Your implementation here
     size = y.size   
     y_pred = x.dot(W.transpose()).flatten()
-    weight_error = (y_pred + b - y.flatten()) + reg*W[:-1].sum()
-    bias_error = (y_pred + b -y.flatten())
-
-     
-    return weight_error.dot(x) / size,bias_error.sum()/size
+    weight_error = (y_pred + b - y.flatten()).dot(x)/size + reg*LA.norm(W)
+    bias_error = (y_pred + b - y.flatten())
+    return weight_error, bias_error.sum()/size
 
 
 def grad_loop(W, b, trainingData, trainingLabels, reg, alpha):
@@ -182,14 +180,19 @@ def crossEntropyLoss(W, b, x, y, reg):
     """
     y_flat = y.flatten()
     z = -(y_flat.dot(np.log(sigmoid(W, b, x)))) - np.dot((1 - y_flat), np.log(1 - sigmoid(W, b, x)))
-    z = z.sum()/size + 0.5*reg*LA.norm(W)*LA.norm(W)
+    z = z.sum() / size + 0.5 * reg * LA.norm(W) * LA.norm(W)
     print(z, np.shape(z))
     return z
 
 
 def gradCE(W, b, x, y, reg):
     # Your implementation here
-    return
+    size = y.size
+    print('Y shape: ', np.shape(y))
+    print('W shape: ', np.shape(W))
+    print('X shape: ', np.shape(x))
+    print('Sigmoid Shape: ', np.shape(sigmoid(W, b, x)))
+    # return -((y.flatten() - sigmoid(W, b, x)).dot(x))/size + reg*LA.norm(W)
 
 
 def grad_descent(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS):
@@ -211,7 +214,14 @@ print('shape', np.shape(trainData))
 # testData = all_data[2]
 np.random.seed(3)
 W = np.random.rand(784)
-crossEntropyLoss(W, 0, trainData, trainTarget, reg=1)
+CE = crossEntropyLoss(W, 0, trainData, trainTarget, reg=0.0)
+gCE = gradCE(W, 0, trainData, trainTarget, reg=0.0)
+z = sigmoid(W, 0, trainData)
+print('CE: ', CE)
+print('shape of gCE: ', np.shape(gCE))
+print('gCE: ', gCE)
+print('shape of z: ', np.shape(z))
+print(z)
 
 '''
 atStart = MSE(W, 0, trainData, trainTarget, reg=0.0)

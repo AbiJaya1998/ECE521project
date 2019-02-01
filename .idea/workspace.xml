@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="338e28e7-02d9-4a9f-a63b-30cab01ce9e7" name="Default Changelist" comment="Merge branch 'master' of https://github.com/Abijaya1998/ECE521project&#10;&#10;# Conflicts:&#10;#&#9;starter.py">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/starter.py" beforeDir="false" afterPath="$PROJECT_DIR$/starter.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -26,12 +25,12 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="4548" />
+          <entry key="py" value="5112" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="4548" />
+          <entry key="Python" value="5112" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -51,15 +50,15 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/starter.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="119">
-              <caret line="184" column="31" selection-start-line="184" selection-start-column="31" selection-end-line="184" selection-end-column="31" />
+            <state relative-caret-position="85">
+              <caret line="217" column="4" lean-forward="true" selection-start-line="217" selection-start-column="4" selection-end-line="217" selection-end-column="4" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
-                <marker date="1549058947584" expanded="true" signature="5564:5635" ph="..." />
-                <marker date="1549058947584" expanded="true" signature="5673:5678" ph="..." />
-                <marker date="1549058947584" expanded="true" signature="6283:6288" ph="..." />
-                <marker date="1549058947584" expanded="true" signature="6410:6415" ph="..." />
-                <marker date="1549058947584" expanded="true" signature="6543:6548" ph="..." />
+                <marker date="1549063962980" expanded="true" signature="5555:5626" ph="..." />
+                <marker date="1549063962980" expanded="true" signature="5664:5669" ph="..." />
+                <marker date="1549063962980" expanded="true" signature="6295:6300" ph="..." />
+                <marker date="1549063962980" expanded="true" signature="6672:6677" ph="..." />
+                <marker date="1549063962980" expanded="true" signature="6805:6810" ph="..." />
               </folding>
             </state>
           </provider>
@@ -168,7 +167,7 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.386121" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.4039146" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -189,15 +188,15 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/starter.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="184" column="31" selection-start-line="184" selection-start-column="31" selection-end-line="184" selection-end-column="31" />
+        <state relative-caret-position="85">
+          <caret line="217" column="4" lean-forward="true" selection-start-line="217" selection-start-column="4" selection-end-line="217" selection-end-column="4" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <marker date="1549058947584" expanded="true" signature="5564:5635" ph="..." />
-            <marker date="1549058947584" expanded="true" signature="5673:5678" ph="..." />
-            <marker date="1549058947584" expanded="true" signature="6283:6288" ph="..." />
-            <marker date="1549058947584" expanded="true" signature="6410:6415" ph="..." />
-            <marker date="1549058947584" expanded="true" signature="6543:6548" ph="..." />
+            <marker date="1549063962980" expanded="true" signature="5555:5626" ph="..." />
+            <marker date="1549063962980" expanded="true" signature="5664:5669" ph="..." />
+            <marker date="1549063962980" expanded="true" signature="6295:6300" ph="..." />
+            <marker date="1549063962980" expanded="true" signature="6672:6677" ph="..." />
+            <marker date="1549063962980" expanded="true" signature="6805:6810" ph="..." />
           </folding>
         </state>
       </provider>
