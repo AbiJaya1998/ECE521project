@@ -121,7 +121,16 @@ def grad_loop(W, b, trainingData, trainingLabels, reg, alpha):
 
     # Your implementation here
     # E=MSE(W,b,trainingData,trainingLabels,reg) if close to zero don';t run gradient descent
-
+def grad_loop_CE(W, b, trainingData, trainingLabels, reg, alpha):
+    errorW = gradCE(W, b, trainingData, trainingLabels, reg)
+   
+    norm = np.linalg.norm(errorW)
+    #errorG /= norm
+    print norm
+    # print W
+    W += -(errorW*alpha)
+    #b += -(errorB*alpha)
+    return norm,W,b
 
 def grad_descent(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS):
     mse_list = []
@@ -159,7 +168,7 @@ def sigmoid(W, b, x):
     # print(np.shape(x))
     # print(np.shape(b))
     z = x.dot(W.transpose()).flatten()+b
-    return 1/(1+np.exp(z))
+    return 1/(1+np.exp(-z))
 
 
 def crossEntropyLoss(W, b, x, y, reg):
@@ -181,23 +190,50 @@ def crossEntropyLoss(W, b, x, y, reg):
     y_flat = y.flatten()
     z = -(y_flat.dot(np.log(sigmoid(W, b, x)))) - np.dot((1 - y_flat), np.log(1 - sigmoid(W, b, x)))
     z = z.sum() / size + 0.5 * reg * LA.norm(W) * LA.norm(W)
-    print(z, np.shape(z))
+    #print(z, np.shape(z))
     return z
 
 
 def gradCE(W, b, x, y, reg):
     # Your implementation here
     size = y.size
-    print('Y shape: ', np.shape(y))
+    '''print('Y shape: ', np.shape(y))
     print('W shape: ', np.shape(W))
     print('X shape: ', np.shape(x))
-    print('Sigmoid Shape: ', np.shape(sigmoid(W, b, x)))
-    # return -((y.flatten() - sigmoid(W, b, x)).dot(x))/size + reg*LA.norm(W)
+    print('Sigmoid Shape: ', np.shape(sigmoid(W, b, x)))'''
+    return -((y.flatten() - sigmoid(W, b, x)).dot(x))/size + reg*LA.norm(W)
 
 
-def grad_descent(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS):
+def grad_descent_CE(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS):
     # Your implementation here
-    return
+    mse_list = []
+    iterations_list = []
+    V_list=[]
+    T_list=[]
+    while iterations < 1000:
+	    g_val, W, b= grad_loop_CE(W, b, trainingData, trainingLabels, reg, alpha)
+	    mse_training = crossEntropyLoss(W, b, trainingData, trainingLabels, reg)
+	    iterations += 1
+	    Error_V=crossEntropyLoss(W, b, validData, validTarget, reg=0.0)
+	    Error_T=crossEntropyLoss(W, b, testData, testTarget, reg=0.0)
+	    V_list.append(Error_V)
+	    T_list.append(Error_T)
+	    iterations_list.append(iterations)
+	    mse_list.append(mse_training)
+
+	    # print("W: ", W)
+	    if g_val < 0.001:
+	        print("done")
+	        break
+		# print("W: ", W)
+    fig, ax = plt.subplots()
+    ax.plot(iterations_list, mse_list)
+    ax.plot(iterations_list, V_list)
+    ax.plot(iterations_list, T_list)
+    ax.legend((mse_list, V_list, T_list), ('Training Error', 'Validation Error', 'Testing Error'))
+    plt.show()
+    return W, b
+    
 
 
 def buildGraph(beta1=None, beta2=None, epsilon=None, lossType=None, learning_rate=None):
@@ -213,7 +249,7 @@ print('shape', np.shape(trainData))
 # validData = all_data[1]
 # testData = all_data[2]
 np.random.seed(3)
-W = np.random.rand(784)
+W = np.zeros((784,))#np.random.rand(784)
 CE = crossEntropyLoss(W, 0, trainData, trainTarget, reg=0.0)
 gCE = gradCE(W, 0, trainData, trainTarget, reg=0.0)
 z = sigmoid(W, 0, trainData)
@@ -222,11 +258,11 @@ print('shape of gCE: ', np.shape(gCE))
 print('gCE: ', gCE)
 print('shape of z: ', np.shape(z))
 print(z)
-
+W, b = grad_descent_CE(W, 0, trainData, trainTarget, alpha=0.0003, iterations=0.0, reg=0.0, EPS=1e-7)
 '''
 atStart = MSE(W, 0, trainData, trainTarget, reg=0.0)
 
-# W, b = grad_descent(W, 0, trainData, trainTarget, alpha=0.0003, iterations=0.0, reg=0.0, EPS=1e-7)
+
 
 atEnd = MSE(W, b, trainData, trainTarget, reg=0.0)
 print(atStart, atEnd)
