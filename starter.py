@@ -138,7 +138,7 @@ def grad_descent(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS
     V_list=[]
     T_list=[]
     W_old = W
-    while iterations < 5000:
+    while iterations < 10:
         g_val, W, b= grad_loop(W, b, trainingData, trainingLabels, reg, alpha)
         mse_training = MSE(W, b, trainingData, trainingLabels, reg)
         iterations += 1
@@ -229,12 +229,14 @@ def grad_descent_CE(W, b, trainingData, trainingLabels, alpha, iterations, reg, 
 	        print("done")
 	        break
 		# print("W: ", W)
+    """
     fig, ax = plt.subplots()
     ax.plot(iterations_list, mse_list)
     ax.plot(iterations_list, V_list)
     ax.plot(iterations_list, T_list)
     ax.legend((mse_list, V_list, T_list), ('Training Error', 'Validation Error', 'Testing Error'))
     plt.show()
+    """
     return W, b
 
 
@@ -280,7 +282,10 @@ print(z)
 # W, b = grad_descent_CE(W, 0, trainData, trainTarget, alpha=0.0003, iterations=0.0, reg=0.0, EPS=1e-7)
 """
 
+"""
+start = time.time()
 W_1, b_1, mse_list_1, V_list_1, T_list_1, iterations_list_1 = grad_descent(W_init1, 0, trainData, trainTarget, alpha=0.005, iterations=0, reg=0.0001, EPS=1e-7)
+end = time.time()
 print('Accuracy for Lambda=0.001: ', accuracy(W_1, b_1, testData, testTarget))
 W_2, b_2, mse_list_2, V_list_2, T_list_2, iterations_list_2 = grad_descent(W_init2, 0, trainData, trainTarget, alpha=0.005, iterations=0, reg=0.1, EPS=1e-7)
 print('Accuracy for Lambda=0.1: ', accuracy(W_2, b_2, testData, testTarget))
@@ -323,6 +328,33 @@ plt.title('Error when Regularization = 0.5')
 
 plt.suptitle("Error for All Datasets for Learning Rate = 0.005, 0.001, 0.0001", fontsize=14)
 plt.show()
+"""
+
+start_nideal = time.time()
+W_1, b_1, mse_list_1, V_list_1, T_list_1, iterations_list_1 = grad_descent(W_init1, 0, trainData, trainTarget, alpha=0.005, iterations=0, reg=0.0001, EPS=1e-7)
+end_nideal = time.time()
+error_nideal = mse_list_1[len(mse_list_1) - 1]
+start_acc = time.time()
+acc_nideal = accuracy(W_1, b_1, trainData, trainTarget)
+end_acc = time.time()
+
+print("time of acc func: ", end_acc - start_acc)
+
+start_ideal = time.time()
+W_ideal = np.matmul(np.matmul(inv(np.matmul(trainData.transpose(), trainData)), trainData.transpose()), trainTarget)
+end_ideal = time.time()
+W_ideal = W_ideal.flatten()
+error_ideal = MSE(W_ideal, 0, trainData, trainTarget, reg=0.0)
+acc_ideal = accuracy(W_ideal, 0, trainData, trainTarget)
+
+print('===Comparison of Optimal Solution to Trained Solution===')
+print('Time of Trained solution: ', end_nideal - start_nideal)
+print('Time of Optimal solution: ', end_ideal - start_ideal)
+print('Error of Trained solution: ', error_nideal)
+print('Error of Optimal solution: ', error_ideal)
+print('Accuracy of Trained solution: ', acc_nideal)
+print('Accuracy of Optimal solution: ', acc_ideal)
+
 '''
 atStart = MSE(W, 0, trainData, trainTarget, reg=0.0)
 
