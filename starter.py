@@ -126,40 +126,43 @@ def grad_loop_CE(W, b, trainingData, trainingLabels, reg, alpha):
    
     norm = np.linalg.norm(errorW)
     #errorG /= norm
-    print norm
+    print(norm)
     # print W
     W += -(errorW*alpha)
     #b += -(errorB*alpha)
     return norm,W,b
 
-def grad_descent(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS):
+def grad_descent(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS=1e-7):
     mse_list = []
     iterations_list = []
     V_list=[]
     T_list=[]
-    while iterations < 500:
+    W_old = W
+    while iterations < 5000:
         g_val, W, b= grad_loop(W, b, trainingData, trainingLabels, reg, alpha)
         mse_training = MSE(W, b, trainingData, trainingLabels, reg)
         iterations += 1
-        Error_V=MSE(W, b, validData, validTarget, reg=0.0)
-        Error_T=MSE(W, b, testData, testTarget, reg=0.0)
+        Error_V=MSE(W, b, validData, validTarget, reg=reg)
+        Error_T=MSE(W, b, testData, testTarget, reg=reg)
         V_list.append(Error_V)
         T_list.append(Error_T)
         iterations_list.append(iterations)
         mse_list.append(mse_training)
-
         # print("W: ", W)
-        if g_val < 0.001:
+        if g_val < 0.0001:
             print("done")
             break
+        W_old = W
     # print("W: ", W)
+    """
     fig, ax = plt.subplots()
     ax.plot(iterations_list, mse_list)
     ax.plot(iterations_list, V_list)
     ax.plot(iterations_list, T_list)
     ax.legend((mse_list, V_list, T_list), ('Training Error', 'Validation Error', 'Testing Error'))
     plt.show()
-    return W, b
+    """
+    return W, b, mse_list, V_list, T_list, iterations_list
 
 
 def sigmoid(W, b, x):
@@ -233,12 +236,23 @@ def grad_descent_CE(W, b, trainingData, trainingLabels, alpha, iterations, reg, 
     ax.legend((mse_list, V_list, T_list), ('Training Error', 'Validation Error', 'Testing Error'))
     plt.show()
     return W, b
-    
 
 
 def buildGraph(beta1=None, beta2=None, epsilon=None, lossType=None, learning_rate=None):
     # Your implementation here
     return
+
+
+def accuracy(W, b, x, y):
+    y_pred = x.dot(W.transpose()).flatten() + b
+    diff = np.abs(y.flatten() - y_pred)
+    diff = diff.flatten()
+    correct = 0
+    for item in diff:
+        if item < 0.5:
+            correct += 1
+    return correct / len(diff)
+
 
 
 trainData, validData, testData, trainTarget, validTarget, testTarget = loadData()
@@ -249,7 +263,12 @@ print('shape', np.shape(trainData))
 # validData = all_data[1]
 # testData = all_data[2]
 np.random.seed(3)
-W = np.zeros((784,))#np.random.rand(784)
+W = np.zeros((784,))  # np.random.rand(784)
+W_init1 = W
+W_init2 = W
+W_init3 = W
+b = 0
+"""
 CE = crossEntropyLoss(W, 0, trainData, trainTarget, reg=0.0)
 gCE = gradCE(W, 0, trainData, trainTarget, reg=0.0)
 z = sigmoid(W, 0, trainData)
@@ -258,7 +277,52 @@ print('shape of gCE: ', np.shape(gCE))
 print('gCE: ', gCE)
 print('shape of z: ', np.shape(z))
 print(z)
-W, b = grad_descent_CE(W, 0, trainData, trainTarget, alpha=0.0003, iterations=0.0, reg=0.0, EPS=1e-7)
+# W, b = grad_descent_CE(W, 0, trainData, trainTarget, alpha=0.0003, iterations=0.0, reg=0.0, EPS=1e-7)
+"""
+
+W_1, b_1, mse_list_1, V_list_1, T_list_1, iterations_list_1 = grad_descent(W_init1, 0, trainData, trainTarget, alpha=0.005, iterations=0, reg=0.0001, EPS=1e-7)
+print('Accuracy for Lambda=0.001: ', accuracy(W_1, b_1, testData, testTarget))
+W_2, b_2, mse_list_2, V_list_2, T_list_2, iterations_list_2 = grad_descent(W_init2, 0, trainData, trainTarget, alpha=0.005, iterations=0, reg=0.1, EPS=1e-7)
+print('Accuracy for Lambda=0.1: ', accuracy(W_2, b_2, testData, testTarget))
+W_3, b_3, mse_list_3, V_list_3, T_list_3, iterations_list_3 = grad_descent(W_init3, 0, trainData, trainTarget, alpha=0.005, iterations=0, reg=0.5, EPS=1e-7)
+print('Accuracy for Lambda=0.5: ', accuracy(W_3, b_3, testData, testTarget))
+
+
+# print('Accuracy for Lambda=0.001: ', accuracy(W_1, b_1, testData, testTarget))
+# print('Accuracy for Lambda=0.1: ', accuracy(W_2, b_2, testData, testTarget))
+# print('Accuracy for Lambda=0.5: ', accuracy(W_3, b_3, testData, testTarget))
+
+fig = plt.figure()
+
+plt.subplot(131)
+plt.plot(iterations_list_1, mse_list_1, label='Training')
+plt.plot(iterations_list_1, V_list_1, label='Validation')
+plt.plot(iterations_list_1, T_list_1, label='Testing')
+plt.xlabel('Number of Iterations')
+plt.ylabel('MSE Error Value')
+plt.legend(loc='upper right')
+plt.title('Error when Regularization = 0.001')
+
+plt.subplot(132)
+plt.plot(iterations_list_2, mse_list_2, label='Training')
+plt.plot(iterations_list_2, V_list_2, label='Validation')
+plt.plot(iterations_list_2, T_list_2, label='Testing')
+plt.legend(loc='upper right')
+plt.xlabel('Number of Iterations')
+plt.ylabel('MSE Error Value')
+plt.title('Error when Regularization = 0.1')
+
+plt.subplot(133)
+plt.plot(iterations_list_3, mse_list_3, label='Training')
+plt.plot(iterations_list_3, V_list_3, label='Validation')
+plt.plot(iterations_list_3, T_list_3, label='Testing')
+plt.legend(loc='upper right')
+plt.xlabel('Number of Iterations')
+plt.ylabel('MSE Error Value')
+plt.title('Error when Regularization = 0.5')
+
+plt.suptitle("Error for All Datasets for Learning Rate = 0.005, 0.001, 0.0001", fontsize=14)
+plt.show()
 '''
 atStart = MSE(W, 0, trainData, trainTarget, reg=0.0)
 
