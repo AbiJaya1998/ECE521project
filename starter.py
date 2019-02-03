@@ -126,7 +126,7 @@ def grad_loop_CE(W, b, trainingData, trainingLabels, reg, alpha):
    
     norm = np.linalg.norm(errorW)
     #errorG /= norm
-    print norm
+    #print norm
     # print W
     W += -(errorW*alpha)
     #b += -(errorB*alpha)
@@ -210,7 +210,7 @@ def grad_descent_CE(W, b, trainingData, trainingLabels, alpha, iterations, reg, 
     iterations_list = []
     V_list=[]
     T_list=[]
-    while iterations < 1000:
+    while iterations < 5000:
 	    g_val, W, b= grad_loop_CE(W, b, trainingData, trainingLabels, reg, alpha)
 	    mse_training = crossEntropyLoss(W, b, trainingData, trainingLabels, reg)
 	    iterations += 1
@@ -258,7 +258,7 @@ print('shape of gCE: ', np.shape(gCE))
 print('gCE: ', gCE)
 print('shape of z: ', np.shape(z))
 print(z)
-W, b = grad_descent_CE(W, 0, trainData, trainTarget, alpha=0.0003, iterations=0.0, reg=0.0, EPS=1e-7)
+W, b = grad_descent_CE(W, 0, trainData, trainTarget, alpha=0.005, iterations=0.0, reg=0.0, EPS=1e-7)
 '''
 atStart = MSE(W, 0, trainData, trainTarget, reg=0.0)
 
