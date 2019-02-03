@@ -137,7 +137,7 @@ def grad_descent(W, b, trainingData, trainingLabels, alpha, iterations, reg, EPS
     iterations_list = []
     V_list=[]
     T_list=[]
-    while iterations < 500:
+    while iterations < 5000:
         g_val, W, b= grad_loop(W, b, trainingData, trainingLabels, reg, alpha)
         mse_training = MSE(W, b, trainingData, trainingLabels, reg)
         iterations += 1
@@ -168,6 +168,7 @@ def sigmoid(W, b, x):
     # print(np.shape(x))
     # print(np.shape(b))
     z = x.dot(W.transpose()).flatten()+b
+    print('z: ', z)
     return 1/(1+np.exp(-z))
 
 
@@ -210,22 +211,22 @@ def grad_descent_CE(W, b, trainingData, trainingLabels, alpha, iterations, reg, 
     iterations_list = []
     V_list=[]
     T_list=[]
-    while iterations < 5000:
-	    g_val, W, b= grad_loop_CE(W, b, trainingData, trainingLabels, reg, alpha)
-	    mse_training = crossEntropyLoss(W, b, trainingData, trainingLabels, reg)
-	    iterations += 1
-	    Error_V=crossEntropyLoss(W, b, validData, validTarget, reg=0.0)
-	    Error_T=crossEntropyLoss(W, b, testData, testTarget, reg=0.0)
-	    V_list.append(Error_V)
-	    T_list.append(Error_T)
-	    iterations_list.append(iterations)
-	    mse_list.append(mse_training)
+    while iterations < 1000:
+        g_val, W, b= grad_loop_CE(W, b, trainingData, trainingLabels, reg, alpha)
+        mse_training = crossEntropyLoss(W, b, trainingData, trainingLabels, reg)
+        iterations += 1
+        Error_V=crossEntropyLoss(W, b, validData, validTarget, reg=0.0)
+        Error_T=crossEntropyLoss(W, b, testData, testTarget, reg=0.0)
+        V_list.append(Error_V)
+        T_list.append(Error_T)
+        iterations_list.append(iterations)
+        mse_list.append(mse_training)
 
-	    # print("W: ", W)
-	    if g_val < 0.001:
-	        print("done")
-	        break
-		# print("W: ", W)
+        # print("W: ", W)
+        if g_val < 0.001:
+            print("done")
+            break
+        # print("W: ", W)
     fig, ax = plt.subplots()
     ax.plot(iterations_list, mse_list)
     ax.plot(iterations_list, V_list)
@@ -250,14 +251,16 @@ print('shape', np.shape(trainData))
 # testData = all_data[2]
 np.random.seed(3)
 W = np.zeros((784,))#np.random.rand(784)
-CE = crossEntropyLoss(W, 0, trainData, trainTarget, reg=0.0)
-gCE = gradCE(W, 0, trainData, trainTarget, reg=0.0)
-z = sigmoid(W, 0, trainData)
-print('CE: ', CE)
-print('shape of gCE: ', np.shape(gCE))
-print('gCE: ', gCE)
-print('shape of z: ', np.shape(z))
-print(z)
+# CE = crossEntropyLoss(W, 0, trainData, trainTarget, reg=0.0)
+# gCE = gradCE(W, 0, trainData, trainTarget, reg=0.0)
+# z = sigmoid(W, 0, trainData)
+# print('CE: ', CE)
+# print('shape of gCE: ', np.shape(gCE))
+# print('gCE: ', gCE)
+# print('shape of z: ', np.shape(z))
+# print(z)
+
+print('Old code: ')
 W, b = grad_descent_CE(W, 0, trainData, trainTarget, alpha=0.005, iterations=0.0, reg=0.0, EPS=1e-7)
 '''
 atStart = MSE(W, 0, trainData, trainTarget, reg=0.0)
