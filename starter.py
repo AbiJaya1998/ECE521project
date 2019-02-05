@@ -6,7 +6,7 @@ from numpy import linalg as LA
 from numpy.linalg import inv
 import time
 
-img_h = img_w = 28             # MNIST images are 28x28
+img_h = img_w = 28             # #MNIST images are 28x28
 img_size_flat = img_h * img_w  # 28x28=784, the total number of pixels
 
 
