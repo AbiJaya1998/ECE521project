@@ -44,10 +44,11 @@ def shuffle(trainData, trainTarget):
 
 
 def relu(x):
-    # TODO
+    return x *(x > 0)# or can be done using np.maximum(x,0) 
 
 def softmax(x):
-    # TODO
+        
+# TODO
 
 
 def computeLayer(X, W, b):
