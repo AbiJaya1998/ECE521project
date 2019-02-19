@@ -4,7 +4,15 @@ import matplotlib.pyplot as plt
 import time
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+'''
+Train Data -(10000,28, 28)
+Valid Data -(6000,28, 28)
+Test Data -(2724,28, 28)
 
+Train Target -(10000,)
+valid Target -(10000,)
+Test Target -(10000,)
+'''
 # Load the data
 def loadData():
     with np.load("notMNIST.npz") as data:
@@ -58,11 +66,16 @@ def softmax(x):
 
 
 
-'''def computeLayer(X, W, b):
+def computeLayer(X, W, b):
     # TODO
+    W_transpose = np.transpose(W)
+    return np.dot(W_transpose,X)+b      # Open to changes
 
 
 def CE(target, prediction):
+      CE_vector=np.dot(target,np.log(softmax(prediction)))
+      CE_error = -1*(CE_vector.sum()/len(CE_vector))
+      return CE_error
     # TODO
 
 
