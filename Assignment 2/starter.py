@@ -44,21 +44,37 @@ def shuffle(trainData, trainTarget):
 
 
 def relu(x):
-    return x *(x > 0)# or can be done using np.maximum(x,0) 
+    '''Calculates the RELU max value of X'''
+
+    return x *(x > 0) # or can be done using np.maximum(x,0) 
 
 def softmax(x):
-        
-# TODO
+    '''Calculates Softmax of x'''
+
+    exp = np.exp(x)
+    exp_sum = np.sum(np.exp(x),axis=0)
+    soft_max=exp/exp_sum
+    return soft_max
 
 
-def computeLayer(X, W, b):
+
+'''def computeLayer(X, W, b):
     # TODO
+
 
 def CE(target, prediction):
-
     # TODO
+
 
 def gradCE(target, prediction):
+    # TODO'''
 
-    # TODO
+trainData, validData, testData, trainTarget, validTarget, testTarget = loadData()
+print(np.shape(trainData))
+print(np.shape(validData))
+print(np.shape(testData))
+print(np.shape(trainTarget))
+print(np.shape(validTarget))
+print(np.shape(testTarget))
+
 
