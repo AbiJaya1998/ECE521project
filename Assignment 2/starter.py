@@ -13,6 +13,23 @@ Train Target -(10000,)
 valid Target -(10000,)
 Test Target -(10000,)
 '''
+
+"""
+For sanity: shapes into functions:
+
+general variables:
+n = number of examples
+k = number of classes
+
+our images are 784 pixels long after flattening
+
+gradCE(targets, predictions)
+    target = k x 1 or 1 x k (fla
+    predictions = k x n
+    
+    <target, predictions> = 1 x n
+    sum of <target, predictions> = scalar, 1 x 1
+"""
 # Load the data
 def loadData():
     with np.load("notMNIST.npz") as data:
@@ -69,18 +86,25 @@ def softmax(x):
 def computeLayer(X, W, b):
     # TODO
     W_transpose = np.transpose(W)
-    return np.dot(W_transpose,X)+b      # Open to changes
+    return np.dot(W_transpose,X) + b      # Open to changes
 
 
-def CE(target, prediction):
-      CE_vector=np.dot(target,np.log(softmax(prediction)))
-      CE_error = -1*(CE_vector.sum()/len(CE_vector))
-      return CE_error
+def averageCE(target, prediction):
+    CE_vector=np.dot(target,np.log(softmax(prediction)))
+    CE_error = -1*(CE_vector.sum()/len(CE_vector))
+    return CE_error
     # TODO
 
 
 def gradCE(target, prediction):
-    # TODO'''
+    softpreds = softmax(predictions)
+    grad = np.dot(target.flatten(), 1.0 / softpreds)
+    
+    totalGrad = -grad.sum()
+    averageGrad = -(1.0 / len(grad)) * grad.sum()
+    
+    return averageGrad, totalGrad
+    # TODO
 
 trainData, validData, testData, trainTarget, validTarget, testTarget = loadData()
 print(np.shape(trainData))
