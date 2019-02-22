@@ -23,6 +23,11 @@ k = number of classes
 
 our images are 784 pixels long after flattening
 
+shapes after one-hot encoding
+TrainTarget - (10000, 10)
+ValidTarget - (6000, 10)
+TestTarget -  (2724, 10)
+
 gradCE(targets, predictions)
     target = k x 1 or 1 x k (fla
     predictions = k x n
@@ -30,6 +35,8 @@ gradCE(targets, predictions)
     <target, predictions> = 1 x n
     sum of <target, predictions> = scalar, 1 x 1
 """
+
+
 # Load the data
 def loadData():
     with np.load("notMNIST.npz") as data:
@@ -43,6 +50,7 @@ def loadData():
         validData, validTarget = Data[10000:16000], Target[10000:16000]
         testData, testTarget = Data[16000:], Target[16000:]
     return trainData, validData, testData, trainTarget, validTarget, testTarget
+
 
 # Implementation of a neural network using only Numpy - trained using gradient descent with momentum
 def convertOneHot(trainTarget, validTarget, testTarget):
@@ -73,14 +81,13 @@ def relu(x):
 
     return x *(x > 0) # or can be done using np.maximum(x,0) 
 
+
 def softmax(x):
     '''Calculates Softmax of x'''
-
     exp = np.exp(x)
     exp_sum = np.sum(np.exp(x),axis=0)
     soft_max=exp/exp_sum
     return soft_max
-
 
 
 def computeLayer(X, W, b):
@@ -98,20 +105,24 @@ def averageCE(target, prediction):
 
 def gradCE(target, prediction):
     softpreds = softmax(predictions)
-    grad = np.dot(target.flatten(), 1.0 / softpreds)
-    
-    totalGrad = -grad.sum()
-    averageGrad = -(1.0 / len(grad)) * grad.sum()
-    
+    averageGrad = (softpreds.transpose() - target)  / (target.shape[0])
+    totalGrad = (softpreds.transpose() - target) 
     return averageGrad, totalGrad
     # TODO
 
 trainData, validData, testData, trainTarget, validTarget, testTarget = loadData()
+newTrainTarget, newValidTarget, newTestTarget = convertOneHot(trainTarget, validTarget, testTarget)
+
+print(np.shape(newTrainTarget))
+print(np.shape(newValidTarget))
+print(np.shape(newTestTarget))
+
+"""
 print(np.shape(trainData))
 print(np.shape(validData))
 print(np.shape(testData))
 print(np.shape(trainTarget))
 print(np.shape(validTarget))
 print(np.shape(testTarget))
-
+"""
 
