@@ -92,7 +92,7 @@ def relu(x):
 def softmax(x):
     # Calculates Softmax of x
     exp = np.exp(x)
-    exp_sum = np.reshape(np.sum(np.exp(x),axis=1), (10000, 1))
+    exp_sum = np.reshape(np.sum(np.exp(x),axis=1), (x.shape[0], 1))
     soft_max=exp/exp_sum
     return soft_max
 
@@ -107,7 +107,8 @@ def averageCE(target, prediction):
     print('target: ', target[1])
     print('prediction: ', prediction[1])
     CE_vector = target * np.log(prediction)
-    CE_error = -1*(CE_vector.sum((0, 1)) / 10000)
+    print('CE_VEC: ', CE_vector.shape[0])
+    CE_error = -1*(CE_vector.sum((0, 1)) / CE_vector.shape[0])
     print('Size: ', CE_vector.shape[0])
     print('Vector shape: ', np.shape(CE_vector))
     print('Error shape: ', np.shape(CE_error))
@@ -116,8 +117,12 @@ def averageCE(target, prediction):
 
 
 def accuracy(target, prediction):
+    target_index = np.argmax(target, axis=1)
+    prediction_index = np.argmax(prediction, axis=1)
     
-    return
+    accuracy = np.equal(target_index, prediction_index).astype(np.float32).sum() / len(target_index)
+    print(accuracy)
+    return accuracy
 
 
 def gradCE(target, prediction):
@@ -158,13 +163,17 @@ def Back_prop(Sval_h, Xval_h,W_out_h, Sval_o, Xval_o,trainTarget):
 
 
 def learning(W_in_h,W_out_h,b_in_h,b_out_h,trainDB, alpha, gamma):
-    num_samples = np.shape(trainDB[0])
-    bias = np.ones((10000, 1), dtype=np.float32)
+    num_samples = len(trainDB)
+    bias = np.ones((len(trainDB), 1), dtype=np.float32)
     iterations = 0
 
     tr_err_list = []
     va_err_list = []
     te_err_list = []    
+    
+    tr_acc_list = []
+    va_acc_list = []
+    te_acc_list = []
 
     v_W_out_old = np.full(np.shape(W_out_h), 1e-5, dtype=np.float32)
     v_W_in_old = np.full(np.shape(W_in_h), 1e-5, dtype=np.float32)
@@ -179,8 +188,8 @@ def learning(W_in_h,W_out_h,b_in_h,b_out_h,trainDB, alpha, gamma):
     while(iterations<=200):
         print(iterations)
         # print(W_out_h)
-        Sval_h, Xval_h, Sval_o, Xval_o=forward_prop(W_in_h,W_out_h,b_in_h,b_out_h,trainDB)
-        delta_o,delta_h=Back_prop(Sval_h, Xval_h,W_out_h, Sval_o, Xval_o,trainTarget)
+        Sval_h, Xval_h, Sval_o, Xval_o = forward_prop(W_in_h,W_out_h,b_in_h,b_out_h,trainDB)
+        delta_o,delta_h = Back_prop(Sval_h, Xval_h,W_out_h, Sval_o, Xval_o,trainTarget)
         
         G_W_out_h = np.dot(np.transpose(Xval_h), np.transpose(delta_o)) / num_samples
         G_W_in_h = np.dot(np.transpose(trainDB), np.transpose(delta_h)) / num_samples
@@ -203,15 +212,22 @@ def learning(W_in_h,W_out_h,b_in_h,b_out_h,trainDB, alpha, gamma):
         b_in_h -= v_b_in_new
         
         # print('num samples: ', num_samples)
-        # print(averageCE(trainTarget, Xval_o))
-        
+        print('Train Error: ', averageCE(trainTarget, Xval_o))
+        print('Train Accuracy: ', accuracy(trainTarget, Xval_o))
+        tr_acc_list.append(accuracy(trainTarget, Xval_o))
         tr_err_list.append(averageCE(trainTarget, Xval_o))
 
-        # Sval_h_va, Xval_h_va, Sval_o_va, Xval_o_va=forward_prop(W_in_h,W_out_h,b_in_h,b_out_h,validData)
-        # va_err_list.append(averageCE(validTarget, Xval_va))
+        Sval_h_va, Xval_h_va, Sval_o_va, Xval_o_va = forward_prop(W_in_h,W_out_h,b_in_h,b_out_h,validData)
+        print('Valid Error: ', averageCE(validTarget, Xval_o_va))
+        print('Valid Accuracy: ', accuracy(validTarget, Xval_o_va))
+        va_acc_list.append(accuracy(validTarget, Xval_o_va))
+        va_err_list.append(averageCE(validTarget, Xval_o_va))
 
-        # Sval_h_te, Xval_h_te, Sval_o_te, Xval_o_te=forward_prop(W_in_h,W_out_h,b_in_h,b_out_h,testData)
-        # te_err_list.append(averageCE(testTarget, Xval_o_te))     
+        Sval_h_te, Xval_h_te, Sval_o_te, Xval_o_te = forward_prop(W_in_h,W_out_h,b_in_h,b_out_h,testData)
+        print('Test Error: ', averageCE(testTarget, Xval_o_te))
+        print('Test Accuracy: ', accuracy(testTarget, Xval_o_te))
+        te_acc_list.append(accuracy(testTarget, Xval_o_te))
+        te_err_list.append(averageCE(testTarget, Xval_o_te))     
 
         iterations += 1
         
@@ -221,13 +237,17 @@ def learning(W_in_h,W_out_h,b_in_h,b_out_h,trainDB, alpha, gamma):
         v_b_out_old = v_b_out_new
         v_b_in_old = v_b_in_new
     
-    # fig, ax = plt.subplots()
-    # iterations_list = np.arange(1, 201)
+    fig, ax = plt.subplots()
+    iterations_list = np.arange(0, 201)
     # ax.plot(iterations_list, tr_err_list, label='Training Error')
     # ax.plot(iterations_list, va_err_list, label='Validation Error')
     # ax.plot(iterations_list, te_err_list, label='Testing Error')
-    # ax.legend()
-    # plt.show()
+    
+    ax.plot(iterations_list, tr_acc_list, label='Training Accuracy')
+    ax.plot(iterations_list, va_acc_list, label='Validation Accuracy')
+    ax.plot(iterations_list, te_acc_list, label='Testing Accuracy')
+    ax.legend()
+    plt.show()
     return W_out_h, W_in_h, b_out_h, b_in_h
     #TODO
    
