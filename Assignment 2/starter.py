@@ -104,14 +104,15 @@ def computeLayer(X, W, b):
 
 
 def averageCE(target, prediction):
-    print('target: ', target[1])
-    print('prediction: ', prediction[1])
+    # print('target: ', target[1])
+    # print('prediction: ', prediction[1])
     CE_vector = target * np.log(prediction)
-    print('CE_VEC: ', CE_vector.shape[0])
+    # print('CE_VEC: ', CE_vector.shape[0])
+    print('shape vec: ', CE_vector.shape)
     CE_error = -1*(CE_vector.sum((0, 1)) / CE_vector.shape[0])
-    print('Size: ', CE_vector.shape[0])
-    print('Vector shape: ', np.shape(CE_vector))
-    print('Error shape: ', np.shape(CE_error))
+    # print('Size: ', CE_vector.shape[0])
+    # print('Vector shape: ', np.shape(CE_vector))
+    # print('Error shape: ', np.shape(CE_error))
     return CE_error
     # TODO
 
@@ -160,6 +161,70 @@ def Back_prop(Sval_h, Xval_h,W_out_h, Sval_o, Xval_o,trainTarget):
     # print("delta_o",np.shape(delta_o))
     # print("delta_h",np.shape(delta_h))
     return delta_o,delta_h
+
+
+def tensorlearn(trainData, trainTarget, alpha = 1e-4, batch_size = 32):
+
+    tf.set_random_seed(421)
+    reg = 0.0
+    img_size = 784
+    n_epochs = 20
+    num_classes = 10
+    
+    x = tf.placeholder(tf.float32,shape = [None,img_size],name='x')
+    x_img = tf.reshape(x,shape = [-1 , 28 , 28 , 1])
+    y_true = tf.placeholder(tf.float32 , shape = [None,num_classes], name='y_true')
+    W_1 = tf.get_variable(name='W_1',shape = [3,3,1,32],initializer = tf.contrib.layers.xavier_initializer() )
+    b_1 = tf.get_variable(name='b_1',shape = [32],initializer = tf.contrib.layers.xavier_initializer())
+    
+    net = x_img
+    net = tf.nn.conv2d(input=net,filter = W_1, strides = [1,1,1,1],padding ='SAME',name='layer_1_conv')
+    net = tf.nn.relu(net+b_1)
+
+    mean,variance = tf.nn.moments(net , axes = [0])
+    net = tf.nn.batch_normalization(net,mean,variance,offset = None,scale = None, variance_epsilon = 0.0001)
+
+
+    net = tf.nn.max_pool(net, ksize = [1,2,2,1],strides = [1,2,2,1], padding ='SAME',name = 'Max_pool')
+
+    net1_size = np.product([s.value for s in net.get_shape()[1:]])
+    net1 = tf.reshape(net,[-1,net1_size])
+
+
+    #1st Dense layer 
+    out_shape = 784
+    W_2 = tf.get_variable(name='W_2',shape = [net1_size,out_shape],initializer = tf.contrib.layers.xavier_initializer() )
+    b_2 = tf.get_variable(name='b_2',shape = [out_shape],initializer = tf.contrib.layers.xavier_initializer())
+    h_2 = tf.nn.relu(tf.matmul(net1,W_2)+b_2)  
+     
+    #2nd Dense layer
+    in_shape = 784
+    out_shape = 10
+    W_3 = tf.get_variable(name='W_3',shape = [in_shape,out_shape],initializer = tf.contrib.layers.xavier_initializer() )
+    b_3 = tf.get_variable(name='b_3',shape = [out_shape],initializer = tf.contrib.layers.xavier_initializer())
+    h_3 = tf.nn.softmax(tf.matmul(h_2,W_3)+b_3, name='softmax_out')
+    
+    #Cross entropy Loss
+    CE_loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=tf.matmul(h_2,W_3)+b_3, name='CE_Loss')) / batch_size
+    optimizer = tf.train.AdamOptimizer(learning_rate = alpha).minimize(CE_loss) 
+    
+    init = tf.global_variables_initializer()
+
+    with tf.Session() as sess:
+       sess.run(init)
+       for epoch in range(n_epochs):
+           data,targets = shuffle(trainData,trainTarget)
+           n_batches = int(trainData.shape[0])//batch_size
+           print("epoch : ", epoch)
+           for i in range (n_batches):
+               xvals = data[i*batch_size:(i+1)*batch_size,:]            
+               yvals = targets[i*batch_size:(i+1)*batch_size,:]  
+               CE,h3,opt = sess.run([CE_loss,h_3,optimizer], feed_dict={x: xvals, y_true: yvals}) 
+               # print("CE_value -", CE)
+               # print("Real_output -",yvals[1,:])
+               # print('Average CE: ', averageCE(yvals, h3))
+    
+    return 
 
 
 def learning(W_in_h,W_out_h,b_in_h,b_out_h,trainDB, alpha, gamma):
@@ -213,19 +278,19 @@ def learning(W_in_h,W_out_h,b_in_h,b_out_h,trainDB, alpha, gamma):
         
         # print('num samples: ', num_samples)
         print('Train Error: ', averageCE(trainTarget, Xval_o))
-        print('Train Accuracy: ', accuracy(trainTarget, Xval_o))
+        # print('Train Accuracy: ', accuracy(trainTarget, Xval_o))
         tr_acc_list.append(accuracy(trainTarget, Xval_o))
         tr_err_list.append(averageCE(trainTarget, Xval_o))
 
         Sval_h_va, Xval_h_va, Sval_o_va, Xval_o_va = forward_prop(W_in_h,W_out_h,b_in_h,b_out_h,validData)
-        print('Valid Error: ', averageCE(validTarget, Xval_o_va))
-        print('Valid Accuracy: ', accuracy(validTarget, Xval_o_va))
+        # print('Valid Error: ', averageCE(validTarget, Xval_o_va))
+        # print('Valid Accuracy: ', accuracy(validTarget, Xval_o_va))
         va_acc_list.append(accuracy(validTarget, Xval_o_va))
         va_err_list.append(averageCE(validTarget, Xval_o_va))
 
         Sval_h_te, Xval_h_te, Sval_o_te, Xval_o_te = forward_prop(W_in_h,W_out_h,b_in_h,b_out_h,testData)
-        print('Test Error: ', averageCE(testTarget, Xval_o_te))
-        print('Test Accuracy: ', accuracy(testTarget, Xval_o_te))
+        # print('Test Error: ', averageCE(testTarget, Xval_o_te))
+        # print('Test Accuracy: ', accuracy(testTarget, Xval_o_te))
         te_acc_list.append(accuracy(testTarget, Xval_o_te))
         te_err_list.append(averageCE(testTarget, Xval_o_te))     
 
@@ -250,7 +315,7 @@ def learning(W_in_h,W_out_h,b_in_h,b_out_h,trainDB, alpha, gamma):
     plt.show()
     return W_out_h, W_in_h, b_out_h, b_in_h
     #TODO
-   
+
 
 trainData, validData, testData, trainTarget, validTarget, testTarget = loadData()
 
@@ -272,8 +337,10 @@ print(np.max(W_output))
 b_in_h=np.random.normal(0,math.sqrt(float(2./1784)),(1, 1000))
 b_out_h=np.random.normal(0,math.sqrt(float(2./1010)),(1, 10))
 
-W_out_h, W_in_h, b_out_h, b_in_h = learning(W_hidden, W_output,b_in_h,b_out_h,trainDB, 0.001, 0.95)
 
+
+# W_out_h, W_in_h, b_out_h, b_in_h = learning(W_hidden, W_output,b_in_h,b_out_h,trainDB, 0.001, 0.95)
+tensorlearn(trainData,trainTarget)
 
 """
 print(np.shape(trainData))
