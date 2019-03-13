@@ -98,33 +98,28 @@ def softmax(x):
 
 
 def computeLayer(X, W, b):
-    # TODO
     W_transpose = np.transpose(W)
     return np.dot(X,W) + b      # Open to changes
 
 
 def averageCE(target, prediction):
-    # print('target: ', target[1])
-    # print('prediction: ', prediction[1])
     CE_vector = target * np.log(prediction)
-    # print('CE_VEC: ', CE_vector.shape[0])
     print('shape vec: ', CE_vector.shape)
     CE_error = -1*(CE_vector.sum((0, 1)) / CE_vector.shape[0])
-    # print('Size: ', CE_vector.shape[0])
-    # print('Vector shape: ', np.shape(CE_vector))
-    # print('Error shape: ', np.shape(CE_error))
     return CE_error
-    # TODO
-
+    
 
 def accuracy(target, prediction):
     target_index = np.argmax(target, axis=1)
-    prediction_index = np.argmax(prediction, axis=1)
-    
+    prediction_index = np.argmax(prediction, axis=1)   
     accuracy = np.equal(target_index, prediction_index).astype(np.float32).sum() / len(target_index)
-    # print(accuracy)
     return accuracy
 
+def gradCE(target, prediction):
+    Grad = (prediction - target)
+    Total = np.transpose(Grad)
+    Average = Total / target.shape[0]
+    return Total , Average
 
 def gradCE(target, prediction):
     # softpreds = softmax(prediction)
@@ -163,7 +158,7 @@ def Back_prop(Sval_h, Xval_h,W_out_h, Sval_o, Xval_o,trainTarget):
     return delta_o,delta_h
 
 
-def tensorlearn(trainData, trainTarget, validData, validTarget, testData, testTarget, alpha = 1e-4, batch_size = 32,reg =0.1):
+def tensorlearn(trainData, trainTarget, validData, validTarget, testData, testTarget, alpha = 1e-4, batch_size = 32,reg =0):
    
     tf.set_random_seed(421)
     img_size = 784
@@ -203,8 +198,9 @@ def tensorlearn(trainData, trainTarget, validData, validTarget, testData, testTa
     out_shape = 784
     W_2 = tf.get_variable(name='W_2',shape = [net1_size,out_shape],initializer = tf.contrib.layers.xavier_initializer() )
     b_2 = tf.get_variable(name='b_2',shape = [out_shape],initializer = tf.contrib.layers.xavier_initializer())
-    h_2 = tf.nn.relu(tf.matmul(net1,W_2)+b_2)  
-     
+    h2_old = tf.nn.dropout(tf.matmul(net1,W_2)+b_2,keep_prob=0.9)#keep_prob=0.75
+    h_2 = tf.nn.relu(h2_old)  
+    #h_2 = tf.nn.dropout(h_2_old,keep_prob = 0.75)
     #2nd Dense layer
     in_shape = 784
     out_shape = 10
@@ -213,7 +209,8 @@ def tensorlearn(trainData, trainTarget, validData, validTarget, testData, testTa
     h_3 = tf.nn.softmax(tf.matmul(h_2,W_3)+b_3, name='softmax_out')
     
     #Cross entropy Loss
-    CE_loss = tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=tf.matmul(h_2,W_3)+b_3, name='CE_Loss')) / batch_size + reg*tf.nn.l2_loss(W_3)+reg*tf.nn.l2_loss(W_2)+reg*tf.nn.l2_loss(W_1)
+    reg1 = reg*tf.nn.l2_loss(W_3)+reg*tf.nn.l2_loss(W_2)+reg*tf.nn.l2_loss(W_1)
+    CE_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=tf.matmul(h_2,W_3)+b_3, name='CE_Loss')) + reg1
     optimizer = tf.train.AdamOptimizer(learning_rate = alpha).minimize(CE_loss) 
 
     init = tf.global_variables_initializer()
@@ -239,44 +236,48 @@ def tensorlearn(trainData, trainTarget, validData, validTarget, testData, testTa
                y_test = targetValid[i*batch_size_test:(i+1)*batch_size_test,:]
 
 
-               CE,h3,opt = sess.run([CE_loss,h_3,optimizer], feed_dict={x: xvals, y_true: yvals}) 
-               CE_va, h3v = sess.run([CE_loss, h_3], feed_dict={x: x_valid, y_true: y_valid})
-               CE_te, h3te = sess.run([CE_loss, h_3], feed_dict={x: x_test, y_true: y_test})
-               if i > 295:
-                  print("Test Error:",CE_te)
-                  print("Test Acc",accuracy(y_test, h3te))
+               CE,h3,reg_1,opt = sess.run([CE_loss,h_3,reg1,optimizer], feed_dict={x: xvals, y_true: yvals}) 
+               # CE_va, h3v = sess.run([CE_loss, h_3], feed_dict={x: x_valid, y_true: y_valid})
+               # CE_te, h3te = sess.run([CE_loss, h_3], feed_dict={x: x_test, y_true: y_test})
+               #if i > 295:
+                  #print("Test Error:",CE_te)
+                  #print("Test Acc",accuracy(y_test, h3te))
                # print("CE_value -", CE)
+               # print("Reg",reg_1)
                # print("Real_output -",yvals[1,:])
                # print('Average CE: ', averageCE(yvals, h3))
-               tr_err_list.append(CE)
-               va_err_list.append(CE_va)
-               te_err_list.append(CE_te)
+               # tr_err_list.append(CE)
+               # va_err_list.append(CE_va)
+               # te_err_list.append(CE_te)
                
-               tr_acc_list.append(accuracy(yvals, h3))
-               va_acc_list.append(accuracy(y_valid, h3v))
-               te_acc_list.append(accuracy(y_test, h3te))
-             
+               # tr_acc_list.append(accuracy(yvals, h3))
+               # va_acc_list.append(accuracy(y_valid, h3v))
+               # te_acc_list.append(accuracy(y_test, h3te))
+
+           CE_loss_tr_e, h_3_tr = sess.run([CE_loss, h_3], feed_dict={x: trainData, y_true: trainTarget})
+           print('Training accuracy all samples: ', accuracy(trainTarget, h_3_tr))
+           CE_loss_v_e, h_3_v = sess.run([CE_loss, h_3], feed_dict={x: validData, y_true: validTarget})
+           print('Validation accuracy all samples: ', accuracy(validTarget, h_3_v)) 
+           CE_loss_te_e, h_3_e = sess.run([CE_loss, h_3], feed_dict={x: testData, y_true: testTarget})
+           print('Test accuracy all samples: ', accuracy(testTarget, h_3_e)) 
+           
+           tr_err_list.append(CE_loss_tr_e)
+           va_err_list.append(CE_loss_v_e)
+           te_err_list.append(CE_loss_te_e)
+           tr_acc_list.append(accuracy(trainTarget, h_3_tr))
+           va_acc_list.append(accuracy(validTarget, h_3_v))
+           te_acc_list.append(accuracy(testTarget, h_3_e))
 
     plt.figure(1)
     #iterations_list = np.arange(0, n_batches*n_epochs)
-    plt.subplot(231)
-    iterations_list = np.linspace(0,n_epochs,n_batches*n_epochs)
-    plt.plot(iterations_list, tr_err_list, label='Training Loss')
-    plt.legend()
-    
-    plt.subplot(232)
-    plt.plot(iterations_list, va_err_list, label='Validation Loss')
-    plt.legend()
-    plt.subplot(233)
-    plt.plot(iterations_list, te_err_list, label='Testing Loss')
-    plt.legend()
-    plt.subplot(234)
+    print(len(tr_err_list))
+    print(len(va_err_list))
+    print(len(te_err_list))
+    plt.subplot(111)
+    iterations_list = np.linspace(0,n_epochs,n_epochs)
+    print(len(iterations_list))
     plt.plot(iterations_list, tr_acc_list, label='Training Accuracy')
-    plt.legend()
-    plt.subplot(235)
     plt.plot(iterations_list, va_acc_list, label='Validation Accuracy')
-    plt.legend()
-    plt.subplot(236)
     plt.plot(iterations_list, te_acc_list, label='Testing Accuracy')
     plt.legend()
     plt.show()
