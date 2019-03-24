@@ -1,0 +1,45 @@
+('epoch : ', 0)
+('Test accuracy all samples: ', 0.9063876651982379)
+('epoch : ', 1)
+('Test accuracy all samples: ', 0.9104258443465492)
+('epoch : ', 2)
+('Test accuracy all samples: ', 0.9100587371512482)
+('epoch : ', 3)
+('Test accuracy all samples: ', 0.9129955947136564)
+('epoch : ', 4)
+('Test accuracy all samples: ', 0.9137298091042585)
+('epoch : ', 5)
+('Test accuracy all samples: ', 0.9148311306901615)
+('epoch : ', 6)
+('Test accuracy all samples: ', 0.9144640234948604)
+('epoch : ', 7)
+('Test accuracy all samples: ', 0.9140969162995595)
+('epoch : ', 8)
+('Test accuracy all samples: ', 0.9137298091042585)
+('epoch : ', 9)
+('Test accuracy all samples: ', 0.9129955947136564)
+
+
+
+
+== For 50 epochs reg=0
+('Training accuracy all samples: ', 0.9997)
+('Test accuracy all samples: ', 0.9258443465491923)
+('Validation accuracy all samples: ', 0.9303333333333333)
+
+
+== For 50 epochs reg=0.1
+('Training accuracy all samples: ', 0.938)
+('Validation accuracy all samples: ', 0.915)
+('Test accuracy all samples: ', 0.920704845814978)
+
+== For 50 epochs reg=0.01
+('Training accuracy all samples: ', 0.991)
+('Validation accuracy all samples: ', 0.9293333333333333)
+('Test accuracy all samples: ', 0.9254772393538914)
+
+== For 50 epochs reg=0.5
+('Training accuracy all samples: ', 0.8817)
+('Validation accuracy all samples: ', 0.8765)
+('Test accuracy all samples: ', 0.8861967694566814)
+
