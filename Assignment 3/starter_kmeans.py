@@ -79,6 +79,7 @@ def errorN(pair_dist):
     X = tf.reshape(tf.convert_to_tensor(xvals,np.int64),[10000,1])
     assign = tf.reshape(tf.argmin(pair_dist,axis = 1),[10000,1])
     mean = tf.concat([X,assign],axis = 1)
+    ton = tf.gather_nd(pair_dist,mean)
     means = tf.reduce_sum(tf.gather_nd(pair_dist,mean))
     ''' for c in xrange(K):
        means.append(tf.reduce_mean(tf.gather(pair_dist,tf.reshape(tf.where(tf.equal(assign, c) ),[1,-1])),reduction_indices = [1]))
@@ -88,7 +89,7 @@ def errorN(pair_dist):
     #assign = tf.gather_nd(pair_dist,assign)
     #for x in range(N):
     print np.shape(means)'''
-    return assign ,X,means,pair_dist
+    return assign ,X,means,pair_dist,ton
 
 def learning(data,learning_rate = 0.1,epochs = 200):
      tf.set_random_seed(421)
@@ -98,7 +99,7 @@ def learning(data,learning_rate = 0.1,epochs = 200):
     
      x_data = tf.placeholder(dtype=tf.float32, name='x_data')
      MU = tf.Variable(tf.random_normal([K, D]), name="mu")
-     assign,X,M, error = distance(x_data,MU)
+     assign,X,M, error,gmean = distance(x_data,MU)
      #update_centroids = tf.assign(MU, M)
 
      optimizer1 = tf.train.AdamOptimizer(learning_rate=learning_rate,beta1=0.9, beta2=0.99,
@@ -108,14 +109,14 @@ epsilon=1e-6).minimize(M)
      with tf.Session() as sess:
         sess.run(init)
         for i in range(epochs):
-             mu,err,ass,m,x,op = sess.run([MU,error,assign,M,X,optimizer1] , feed_dict={x_data: data})
-             print((m))
+             mu,err,ass,m,x,op,g = sess.run([MU,error,assign,M,X,optimizer1,gmean] , feed_dict={x_data: data})
+             print(np.shape(m))
        
    
 
 
         M = MU.eval()
-     return M
+     return M,m
 
 
 """
@@ -123,11 +124,11 @@ min_val = np.amin(data)
 max_val = np.amax(data)
 data = (data - min_val) / (max_val - min_val)
 """
-
+ 
 print (num_pts)
 print (dim)
 print (np.shape(data))
-m = learning(data)
+m ,Argmins = learning(data)
 print(np.shape(m))
 m1 = m[:, 0]
 m2 = m[:, 1]
@@ -136,7 +137,7 @@ print m2
 x1 = data[:,0]
 x2 = data[:,1]
 fig, ax = plt.subplots()
-ax.scatter(x1, x2)
-ax.scatter(m1, m2)
+ax.scatter(x1, x2 ,c = [0.9,.5,.3])
+ax.scatter(m1, m2 ,c = [0,1,1])
 plt.show()
 
