@@ -8,8 +8,8 @@ from helper import reduce_logsumexp
 from helper import logsoftmax
 
 # Loading data
-data = np.load('data100D.npy')
-#data = np.load('data2D.npy')
+#data = np.load('data100D.npy')
+data = np.load('data2D.npy')
 [num_pts, dim] = np.shape(data)
 num_class = 20
 # For Validation set
@@ -56,14 +56,14 @@ def log_GaussPDF(X, mu, var):
     K = num_class
 
     var = tf.transpose(var) # 1 x K
-    X_expand = tf.expand_dims(X,0) # 1 x N x D
-    MU_expand = tf.expand_dims(mu,1) # K x 1 x D
-    distances = tf.transpose(tf.reduce_sum(tf.subtract(X_expand , MU_expand), axis=2)) # K x N
+    X_expand = tf.expand_dims(X,1) # N x 1 x D
+    MU_expand = tf.expand_dims(mu,0) # 1 x K x D
+    distances = tf.reduce_sum(tf.square(tf.subtract(X_expand , MU_expand)), axis=2) # N x K
     
     inv_var = 1 / var # 1 x K
-    dist_inv_var = distances*tf.broadcast_to((inv_var),[N,K]) # N x K
+    dist_inv_var = distances*(inv_var) # N x K
     
-    log_two_pi_variance = D*tf.log(2 * np.pi) + tf.log(var)  # 1 x K
+    log_two_pi_variance = D*tf.log(2 * np.pi) + D*tf.log(var)  # 1 x K
     
     return -0.5 * (log_two_pi_variance + dist_inv_var) # N x K
 
@@ -126,29 +126,29 @@ def find_p_zgx(X,mu,sigma,pi):
         log_sum = log_GaussPDF(X,mu,sigma) + tf.log(tf.transpose(pi))# N X K
         log_sum_pi_gauss = tf.reshape(reduce_logsumexp(log_sum, 1), [-1, 1])# N X 1
 
-        return log_sum- log_sum_pi_gauss
+        return log_sum - log_sum_pi_gauss
 
 
 def neg_log(X,mu,sigma,pi):
-        log_sum = log_GaussPDF(X,mu,sigma*sigma) + tf.log(tf.transpose(pi))#N X K
+        log_sum = log_GaussPDF(X,mu,sigma) + tf.log(tf.transpose(pi))#N X K
         log_pi_gauss = tf.reshape(reduce_logsumexp(log_sum, 1), [-1, 1])# N X 1
     
-        return -1*tf.reduce_sum(log_pi_gauss)
+        return -1*tf.reduce_sum(log_pi_gauss),log_sum - log_pi_gauss
 
 
-def learning(data,learning_rate = 0.5,epsilon=1e-5, epochs = 50):
+def learning(data,learning_rate = 0.01,epsilon=1e-5, epochs = 600):
     N = num_pts
     D = dim
     K = num_class
     tf.set_random_seed(421)
-
+    # tf.random_normal([K,1], mean = 0, stddev=0.5)
     X = tf.placeholder(dtype=tf.float32, name="data") # N x D
-    sigma = tf.exp(tf.Variable(tf.truncated_normal([K, 1], mean=0, stddev=0.5)))
-    pi = tf.exp(logsoftmax(tf.Variable(tf.truncated_normal([K,1], mean=0, stddev=0.5))))
-    MU = tf.Variable(tf.random_normal([K, D]), name="mu")
-    log_probs = find_p_zgx(X, MU, sigma, pi)
+    sigma = tf.Variable(tf.exp(tf.random_normal([K], mean = 0.0, stddev=0.5)))
+    pi = tf.exp(logsoftmax(tf.Variable(tf.random_normal([K,1], mean = 0.0, stddev=0.5))))
+    MU = tf.Variable(tf.random_normal([K, D],mean = 0.0 , stddev = 1.0 , dtype = tf.float32), name="mu")
+    
+    error ,log_probs = neg_log(X,MU,sigma,pi)
     sols = tf.argmax(log_probs,axis =1)
-    error = neg_log(X,MU,sigma,pi)
     optimizer = tf.train.AdamOptimizer(learning_rate = learning_rate, beta1=0.9, beta2=0.99, epsilon = 1e-5).minimize(error)
     
     init = tf.global_variables_initializer()
@@ -156,9 +156,9 @@ def learning(data,learning_rate = 0.5,epsilon=1e-5, epochs = 50):
         sess.run(init)
         for i in range(epochs):
             logs, m,er,op = sess.run([log_probs, MU,error,optimizer] , feed_dict={X: data})
-            print er
+            print(er)
         cluster_assignments = sess.run(sols, feed_dict={X: data}) 
-        print cluster_assignments
+        print(cluster_assignments)
         M = MU.eval()
     
     list_clusters = groupClusters(data, logs)
@@ -194,14 +194,13 @@ def groupClusters(X, log_probs):
 def dispGraphs(means, list_clusters):
     m1 = means[:, 0]
     m2 = means[:, 1]
-    
     fig, ax = plt.subplots()
     #print list_clusters
     for item in list_clusters:
         print('hi')
         item1 = item[:, 0]
         item2 = item[:, 1]
-        ax.scatter(item1, item2, s=5)
+        ax.scatter(item1, item2, s=5, alpha=0.1)
     # ax.scatter(x1, x2)
     #print(m1,m2)
     means = ax.scatter(m1, m2, c="black", marker="^")
@@ -223,5 +222,7 @@ def dispGraphs(means, list_clusters):
 
     # TODO'''
 
+
+data = (data - mean_data) / stddev_data
 list_clusters, m = learning(data)
 dispGraphs(m, list_clusters)
