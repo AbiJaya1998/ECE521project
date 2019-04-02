@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 import helper as hlp
 
 # Loading data
-data = np.load('data2D.npy')
-#data = np.load('data100D.npy')
+#data = np.load('data2D.npy')
+data = np.load('data100D.npy')
 [num_pts, dim] = np.shape(data)
-num_class = 10
+num_class = 3
 is_valid = 	False
 # For Validation set
 if is_valid:
@@ -97,12 +97,13 @@ def errorN(pair_dist):
     return assign ,X,means,pair_dist,ton
 
 
-def learning(data,learning_rate = 0.1,epochs = 200):
+def learning(data,learning_rate = 0.01,epochs = 600):
      tf.set_random_seed(421)
      N = num_pts
      D = dim
      K = num_class
-    
+     Y = []
+     Xv = []
      x_data = tf.placeholder(dtype=tf.float32, name='x_data')
      MU = tf.Variable(tf.random_normal([K, D]), name="mu")
      assign,X,M, error,gmean = distance(x_data,MU)
@@ -116,11 +117,14 @@ def learning(data,learning_rate = 0.1,epochs = 200):
         for i in range(epochs):
 
             mu,err,ass,m,x,op = sess.run([MU,error,assign,M,X,optimizer1] , feed_dict={x_data: data})
-             #print((m))
+            # print((m))
+            Y.append(m)
+            Xv.append(i)
+
         M = MU.eval()
         
      list_clusters = groupClusters(data, M)
-     return list_clusters, M
+     return list_clusters, M, Xv, Y
 
 
 def groupClusters(X, MU):
@@ -139,16 +143,23 @@ def groupClusters(X, MU):
     K = num_class
     
     list_clusters = []
-    
+    list_clusters_size = []
+
     X_ex = np.expand_dims(X, axis=1)
     MU_ex = np.expand_dims(MU, axis=0)
     mean_dist = np.linalg.norm(X_ex - MU_ex, axis=-1) #N x K matrix
     min_ax = np.argmin(mean_dist, axis = 1) # N x 1
+    total_num = len(min_ax)
+    print 'total num: ', total_num
+
     for i in range(K): 
         locations = min_ax == i
         cluster = X[locations,:]
-        print(np.shape(cluster))
+        num_clusts, dims = cluster.shape
+        print 'Percentage of Data in Cluster ' + str(i + 1) + ': ', float(num_clusts) / total_num
+        list_clusters_size.append(num_clusts)
         list_clusters.append(cluster)
+    
     return list_clusters
     
 
@@ -158,16 +169,20 @@ def dispGraphs(means, list_clusters):
     m2 = means[:, 1]
     
     fig, ax = plt.subplots()
+    counter = 0
     for item in list_clusters:
+        counter += 1
         item1 = item[:, 0]
         item2 = item[:, 1]
-        ax.scatter(item1, item2, s=5)
+        num, dim = item.shape
+        if num != 0: 
+            scatter = ax.scatter(item1, item2, s=5, label='Data Cluster ' + str(counter))
     # ax.scatter(x1, x2)
     means = ax.scatter(m1, m2, c="black", marker="^")
-    plt.legend((means,), ('Cluster Centres',))
+    plt.legend()
     plt.xlabel("x1")
     plt.ylabel("x2")
-    plt.title("K-means clustering for K = " + str(num_class))
+    plt.title("Non-Zero  K-means clustering for K = " + str(num_class))
     plt.show()
     return
 
@@ -177,12 +192,17 @@ max_val = np.amax(data)
 data = (data - min_val) / (max_val - min_val)
 """
  
-print (num_pts)
-print (dim)
-print (np.shape(data))
-m ,Argmins = learning(data)
 
-list_clusters, m = learning(data)
+# m ,Argmins = learning(data)
+
+list_clusters, m, X, Y = learning(data)
 dispGraphs(m, list_clusters)
-
-
+print 'Final Error: ', Y[-1]
+ 
+plt.figure(2)
+loss = plt.plot(np.asarray(X),np.asarray(Y))
+plt.xlabel('Number of Updates')
+plt.ylabel('Loss')
+plt.title('K Means Loss vs. Number of Updates for K = ' + str(num_class))
+plt.grid(b=True)
+plt.show()

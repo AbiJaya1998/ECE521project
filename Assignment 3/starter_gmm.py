@@ -8,12 +8,12 @@ from helper import reduce_logsumexp
 from helper import logsoftmax
 
 # Loading data
-#data = np.load('data100D.npy')
-data = np.load('data2D.npy')
+data = np.load('data100D.npy')
+#data = np.load('data2D.npy')
 [num_pts, dim] = np.shape(data)
-num_class = 20
+num_class = 5
 # For Validation set
-is_valid = False
+is_valid = True
 if is_valid:
   valid_batch = int(num_pts / 3.0)
   np.random.seed(45689)
@@ -123,28 +123,31 @@ def log_GaussPDF(X, mu, sigma):
 
 
 def find_p_zgx(X,mu,sigma,pi):
-        log_sum = log_GaussPDF(X,mu,sigma) + tf.log(tf.transpose(pi))# N X K
+        log_sum = log_GaussPDF(X,mu,sigma) + tf.transpose(pi) # N X K
         log_sum_pi_gauss = tf.reshape(reduce_logsumexp(log_sum, 1), [-1, 1])# N X 1
 
         return log_sum - log_sum_pi_gauss
 
 
 def neg_log(X,mu,sigma,pi):
-        log_sum = log_GaussPDF(X,mu,sigma) + tf.log(tf.transpose(pi))#N X K
+        log_sum = log_GaussPDF(X,mu,sigma) + (tf.transpose(pi))#N X K
         log_pi_gauss = tf.reshape(reduce_logsumexp(log_sum, 1), [-1, 1])# N X 1
     
         return -1*tf.reduce_sum(log_pi_gauss),log_sum - log_pi_gauss
 
 
-def learning(data,learning_rate = 0.01,epsilon=1e-5, epochs = 600):
+def learning(data, val_data = None, learning_rate = 0.01,epsilon=1e-5, epochs = 600):
     N = num_pts
     D = dim
     K = num_class
+    Y = []
+    Y_v = []
+    Xv = []
     tf.set_random_seed(421)
     # tf.random_normal([K,1], mean = 0, stddev=0.5)
     X = tf.placeholder(dtype=tf.float32, name="data") # N x D
     sigma = tf.Variable(tf.exp(tf.random_normal([K], mean = 0.0, stddev=0.5)))
-    pi = tf.exp(logsoftmax(tf.Variable(tf.random_normal([K,1], mean = 0.0, stddev=0.5))))
+    pi = logsoftmax(tf.Variable(tf.random_normal([K,1], mean = 0.0, stddev=0.5)))
     MU = tf.Variable(tf.random_normal([K, D],mean = 0.0 , stddev = 1.0 , dtype = tf.float32), name="mu")
     
     error ,log_probs = neg_log(X,MU,sigma,pi)
@@ -155,14 +158,23 @@ def learning(data,learning_rate = 0.01,epsilon=1e-5, epochs = 600):
     with tf.Session() as sess:
         sess.run(init)
         for i in range(epochs):
-            logs, m,er,op = sess.run([log_probs, MU,error,optimizer] , feed_dict={X: data})
-            print(er)
+            logs,m,er,op = sess.run([log_probs, MU,error,optimizer] , feed_dict={X: data})
+            
+            if is_valid == True:
+                logs_v, m_v, er_v, op_v = sess.run([log_probs, MU,error,optimizer] , feed_dict={X: val_data})
+                Y_v.append(er_v)
+            
+            Y.append(er)
+            Xv.append(i)
+
         cluster_assignments = sess.run(sols, feed_dict={X: data}) 
-        print(cluster_assignments)
         M = MU.eval()
-    
+        P = pi.eval()
+        S = sigma.eval()
+        # print 'Training Error for K = ' + str(num_class) + ': ', Y[-1]
+        # print 'Validation Error for K = ' + str(num_class) + ': ', Y_v[-1]
     list_clusters = groupClusters(data, logs)
-    return list_clusters, M
+    return list_clusters, M, P, S, Xv, Y, Y_v
 
 
 def groupClusters(X, log_probs):
@@ -186,7 +198,8 @@ def groupClusters(X, log_probs):
     for i in range(K): 
         locations = max_logs == i
         cluster = X[locations,:]
-        print(np.shape(cluster))
+        num_clusts, dims = cluster.shape
+        print 'Number of Points in Cluster ' + str(i + 1) + ': ', num_clusts
         list_clusters.append(cluster)
     return list_clusters
     
@@ -196,20 +209,28 @@ def dispGraphs(means, list_clusters):
     m2 = means[:, 1]
     fig, ax = plt.subplots()
     #print list_clusters
+    counter = 0
     for item in list_clusters:
+        counter += 1
         print('hi')
         item1 = item[:, 0]
         item2 = item[:, 1]
-        ax.scatter(item1, item2, s=5, alpha=0.1)
-    # ax.scatter(x1, x2)
-    #print(m1,m2)
+    
+        num, dim = item.shape
+        if num != 0: 
+            scatter = ax.scatter(item1, item2, s=5, alpha=0.5, label='Data Cluster ' + str(counter))
+
+        # ax.scatter(x1, x2)
+        #print(m1,m2)
+
     means = ax.scatter(m1, m2, c="black", marker="^")
-    plt.legend((means,), ('Cluster Centres',))
+    plt.legend()
     plt.xlabel("x1")
     plt.ylabel("x2")
-    plt.title("K-means clustering for K = " + str(num_class))
+    plt.title("Gaussian Mixture Model for K = " + str(num_class) + ', Learning Rate = 0.01')
     plt.show()
     return
+
 
 
 '''def log_posterior(log_PDF, log_pi):
@@ -223,6 +244,21 @@ def dispGraphs(means, list_clusters):
     # TODO'''
 
 
-data = (data - mean_data) / stddev_data
-list_clusters, m = learning(data)
+#data = (data - mean_data) / stddev_data
+list_clusters, m, p, s, X, Y, Y_v = learning(data, val_data)
+
+print 'Final Training Error: ', Y[-1]
+print 'Final Validation Error: ', Y_v[-1]
+
+# print "Trained Pi values for K = " + str(num_class) + " clusters: ", p
+# print "Trained Standard Deviations for K = " + str(num_class) + " clusters: ", s
+# print "Trained Cluster centres for K = " + str(num_class) + " clusters: ", m
+
 dispGraphs(m, list_clusters)
+plt.figure(2)
+loss = plt.plot(np.asarray(X),np.asarray(Y))
+plt.xlabel('Number of Updates')
+plt.grid(b=True)
+plt.ylabel('Loss')
+plt.title('Gaussian Mixture Model Loss vs. Number of Updates for K = ' + str(num_class))
+plt.show()

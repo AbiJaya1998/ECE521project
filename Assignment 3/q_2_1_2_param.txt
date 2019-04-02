@@ -1,0 +1,13 @@
+mean: [[nan nan]
+ [nan nan]
+ [nan nan]
+ [nan nan]
+ [nan nan]
+ [nan nan]
+ [nan nan]
+ [nan nan]
+ [nan nan]
+ [nan nan]]
+covariance: [nan nan nan nan nan nan nan nan nan nan]
+learning rate: 0.01
+log_pi: [[nan nan nan nan nan nan nan nan nan nan]]
